@@ -1,0 +1,22 @@
+Program to find smallest/largest number in a given array
+
+.model small
+.data
+nums dw 2222h,5555h,3333h,0aaaah
+len equ ($-nums)/2
+res dw ?
+.code
+start: Mov ax,@data
+Mov ds, ax
+Mov si, offset nums
+Mov cx, (len-1)
+Mov ax, [si]
+back : Inc si
+Inc si
+cmp ax,[si]
+Jnc skip
+Mov ax,[si]
+skip : loop back
+Mov res, ax
+
+--------------------------------------terminate
