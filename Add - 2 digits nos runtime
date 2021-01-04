@@ -1,0 +1,95 @@
+; program to add two 2-digit numbers and display their result in decimal format
+
+.model small
+.stack 100h
+.data
+inmsg  db "Enter a number: $"
+outmsg db "The addition is $"
+.code
+
+mov ax, @data		; setup data segment
+mov ds, ax
+
+mov ah, 09h			; print input message
+lea dx, inmsg
+int 21h
+
+mov ah, 01h			; take first digit from user
+int 21h
+sub al, '0'			; convert ascii to value
+
+mov dl, al
+rol dl, 04h			; shift 4 bits left
+
+mov ah, 01h			; take second digit from user
+int 21h
+sub al, '0'			; convert ascii to value
+
+add dl, al			; after this we have our first digit
+mov bl, dl 			; make copy of first number (dl) into bl
+
+; now take second number (same code as above)
+
+mov ah, 02h			; print newline
+mov dl, 0dh
+int 21h
+
+mov ah, 09h			; print input message
+lea dx, inmsg
+int 21h
+
+mov dl, bl
+
+mov ah, 01h			; take first digit from user
+int 21h
+sub al, '0'
+
+mov bl, al
+rol bl, 04h			; shift 4 bits left
+
+mov ah, 01h
+int 21h
+sub al, '0'
+
+add bl, al			; after this we have our second digit
+
+mov al, bl
+add al, dl			; add the two numbers
+mov cl, al			; make copy of al
+
+; the two digits are in bl and al respectively and result of addition is in al and cl
+
+; you may question as why I've stored result in both al and cl
+; for some reason whenever interrupts occur (int 21h thingy)
+; then the value of al chanegs so a backup of result of needed
+; thats why its also stored it in cl
+
+; now print the result in decimal format
+
+mov al, 02h			; print newline
+mov dl, 0dh
+int 21h
+
+mov ah, 09h			; print output message
+lea dx, outmsg
+int 21h
+
+mov dl, cl			; make copy of cl
+ror dl, 04h			; rotate so that digits are swapped
+and dl, 0fh			; mask upper nibble to get tens place digit in lower nibble
+add dl, '0'			; convert value to ascii
+
+mov ah, 02h			; print tens digit
+int 21h
+
+mov dl, cl			; dl = cl
+and dl, 0fh			; mask upper nibble to get units place digit in lower nibble
+add dl, '0'			; convert value to ascii
+
+mov ah, 02h			; print units digit
+int 21h
+
+mov ah, 4ch			; exit
+int 21h
+
+end
