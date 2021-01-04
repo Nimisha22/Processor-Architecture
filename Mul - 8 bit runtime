@@ -1,0 +1,102 @@
+; Question : multiplication of two 8-bit numbers in runtime
+
+
+.model small
+.data
+a db ?
+b db ?
+
+inmsg db "Enter a number: $"
+outmsg db "The result of multiplication is $"
+
+.code
+mov ax, @data
+mov ds, ax
+
+mov ch, 02h
+
+get:
+lea dx, inmsg       ; display input message
+mov ah, 09h
+int 21h
+
+call getdl
+mov dh, dl          ; make a copy of result
+
+mov dl, 0ah         ; print newline
+mov ah, 02h
+int 21h
+mov dl, dh          ; restore original number
+
+dec ch              
+jz storeb          ; if ch == 1 store result in a otherwise store in b
+
+mov a, dl           ; store first number into a
+jmp get
+
+storeb:
+mov b, dl           ; store second number in b
+
+mov ah, 00h
+mov al, a           ; load first number into al
+imul b               ; multiply second number
+
+mov bx, ax          ; store result in bx
+
+lea dx, outmsg      ; print ouput message
+mov ah, 09h
+int 21h
+
+cmp bh, 00h         ; if bh is zero then just print bl
+je lower            ; else print entire bx register
+
+mov dl, bh
+call showdl
+
+lower:
+mov dl, bl
+call showdl
+
+mov ah, 4ch
+int 21h
+
+getdl proc          ; procedure get 2 digit number in dl
+
+mov ah, 01h
+int 21h
+sub al, '0'
+
+mov dl, al
+rol dl, 04h
+
+mov ah, 01h
+int 21h
+sub al, '0'
+
+add dl, al
+
+ret
+getdl endp
+
+showdl proc
+
+mov dh, dl
+
+ror dl, 04h
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+
+end
