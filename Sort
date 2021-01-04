@@ -1,0 +1,132 @@
+.model small
+.stack 100h
+.data
+
+bsort db "Before sorting: $"
+asort db "After sorting: $"
+nums db 05h, 04h, 03h, 02h, 01h
+len equ ($-nums)
+
+.code
+mov ax, @data
+mov ds, ax
+mov es, ax
+
+lea dx, bsort       ; display array before sorting
+mov ah, 09h
+int 21h
+
+mov dl, 0ah         ; newline
+mov ah, 02h
+int 21h
+
+call show_arr
+
+
+lea si, nums
+mov cl, 00h         ; for(int i = 0; i < len; i++)
+
+; apply selection sort on array
+sort:
+mov ch, len         ; for (int j = 0; j < len; j++)
+lea di, nums        ; di = arr[j]
+call pass
+; at this point ch = 0 and di is last value of array
+inc si              
+inc cl              ; i++
+cmp cl, len         ; if(i < len) loop otherwise go downside
+jl sort
+
+; now print contents of array
+mov dl, 0ah
+mov ah, 02h
+int 21h
+int 21h
+
+lea dx, asort       ; display array after sorting
+mov ah, 09h
+int 21h
+
+mov dl, 0ah
+mov ah, 02h
+int 21h
+
+call show_arr
+
+exit:
+mov ah, 4ch         ; exit
+int 21h
+
+show_arr proc
+push cx
+mov cl, 00h
+show:
+lea bx, nums
+add bl, cl
+mov dl, [bx]        ; get number at index cl
+
+call showdl         ; display contents of dl
+mov dl, 0ah         ; print newline
+mov ah, 02h
+int 21h
+
+inc cl
+cmp cl, len
+jne show
+pop cx
+
+ret
+show_arr endp
+
+
+pass proc           ; procedure to complete one pass of selection sort
+mov dh, [si]
+
+rep1:
+mov dl, [di]
+cmp dh, dl
+jg down
+
+; swap contents of di and si
+push ax
+mov ah, [di]
+mov al, [si]
+mov [di], al
+mov [si], ah
+pop ax
+
+down:
+inc di
+dec ch
+jnz rep1
+
+ret
+pass endp
+
+showdl proc         ; standard procedure to display dl
+; dl = 23h
+
+mov dh, dl
+
+push cx
+mov cl, 04h
+ror dl, cl
+pop cx
+
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+
+end
