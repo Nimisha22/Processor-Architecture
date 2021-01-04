@@ -1,0 +1,72 @@
+; concat two strings into third string and display result
+; by taking user input
+
+print macro msg
+lea dx, msg
+mov ah, 09h
+int 21h
+endm
+
+printc macro char
+mov dl, char
+mov ah, 02h
+int 21h
+endm
+
+println macro msg
+print msg
+printc 0ah
+endm
+
+; Concat two strings into third string
+.model small
+.stack 100h
+.data
+
+inmsg db "Type a string: $"
+result db "After concatenating the string is $"
+
+str1 db 30h, ?, 30h dup('$')
+str2 db 30h, ?, 30h dup('$')
+
+str3 db 60h dup ('$')
+
+.code
+mov ax, @data
+mov ds, ax                          ; link data  segment
+mov es, ax                          ; link extra segment
+
+print inmsg                         ; print input message
+lea dx, str1                        ; get first string from user
+mov ah, 0ah
+int 21h
+
+printc 0ah                          ; print newline
+
+print inmsg                         ; print input message
+lea dx, str2                        ; get second string from user
+mov ah, 0ah
+int 21h
+
+printc 0ah                          ; print newline
+
+; add first string into third
+lea si, str1[2]                     ; put address of first character of str1 into si
+lea di, str3
+mov cl, str1[1]                     ; put length of str1 into cl
+
+rep movsb                           ; put content of si into di until cx becomes 0
+
+; add second string into third
+lea si, str2[2]                     ; put address of first character of str2 into si
+mov cl, str2[1]                     ; put length of str2 into cl
+
+rep movsb                           ; put content of si into di until cx becomes 0
+
+print result
+print str3
+
+mov ah, 4ch
+int 21h
+
+end
