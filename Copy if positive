@@ -1,0 +1,135 @@
+; Copy only positive numbers to destination array from 
+; source array of 10 numbers.
+
+.model small
+.stack 100h  
+
+.data     
+arr1 db 1, 1, 2, 4, 6, 3,    8, -8, 1, 9, -4
+len1 equ ($-arr1)
+
+arr2 db 10h dup(?)
+len2 db ?
+
+len db ?
+
+.code
+
+mov ax, @data    ; Initialise data section
+mov ds, ax       ; Linking
+mov es, ax
+
+lea si, arr1
+lea di, arr2
+mov cl, len1
+mov len2, 00h
+
+; traverse the array the array and find positive numbers
+L1:
+mov dl, [si]
+cmp dl, 0
+jg put
+L2:
+inc si
+dec cl
+jnz L1
+
+jmp L3
+
+put:
+mov [di], dl
+inc di
+inc len2
+jmp L2
+
+L3:
+lea bx, arr2
+mov cl, len2
+mov len, cl
+
+L4:
+lea si, arr2
+mov cl, len2
+
+L5:
+mov dl, [si]
+call showdl
+
+mov dl, 0ah
+mov ah, 02h
+int 21h
+
+inc si
+dec cl
+jnz L5
+
+
+exit:
+mov ah, 4ch
+int 21h
+
+; mov dl, 0ah
+; mov ah, 02h
+; int 21h
+
+; lea dx, output
+; mov ah, 09h
+; int 21h
+
+show_arr proc
+push cx
+mov cl, 00h
+
+show:
+; the address of array to be printed is in bx
+; it is put before calling the function
+
+; lea bx, nums
+mov dl, [bx]        ; get number at index cl
+
+call showdl         ; display contents of dl
+mov dl, 0ah         ; print newline
+mov ah, 02h
+int 21h
+
+inc bx
+inc cl
+cmp cl, len
+jne show
+pop cx
+
+ret
+show_arr endp
+
+
+
+showdl proc         ; standard procedure to display dl
+; dl = 23h
+
+mov dh, dl
+
+push cx
+mov cl, 04h
+ror dl, cl
+pop cx
+
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+                   
+mov ah, 4ch        ; Terminate code
+int 21h
+
+end
