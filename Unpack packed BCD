@@ -1,0 +1,65 @@
+; Question: Unpack a packed BCD
+.model small
+
+.data
+inmsg db "Enter a BCD: $"
+outmsg db "The unpacked BCD is $"
+
+.code
+mov ax, @data
+mov ds, ax
+
+lea dx, inmsg       ; display input message
+mov ah, 09h
+int 21h
+
+mov ah, 01h         ; get first digit   (02)
+int 21h
+
+sub al, '0'
+mov bh, al          ; store it in bh
+
+mov ah, 01h         ; get second digit  (03)
+int 21h
+
+sub al, '0'
+mov bl, al          ; store it in bl
+
+mov dl, 0ah         ; print newline
+mov ah, 02h
+int 21h
+
+lea dx, outmsg      ; display output message
+mov ah, 09h
+int 21h
+
+mov dl, bh          ; display bh
+call showdl
+mov dl, bl          ; display bl
+call showdl
+
+mov ah, 4ch         ; exit
+int 21h
+
+showdl proc         ; standard procedure to display dl
+
+mov dh, dl
+
+ror dl, 04h
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+
+end
