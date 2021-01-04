@@ -1,0 +1,61 @@
+; add two 16-bit numbers
+.model small
+.data
+
+a dw 0019h
+b dw 0002h
+outmsg db "The result is $"
+
+.code
+mov ax, @data
+mov ds, ax
+
+mov ax, a 		; load both numbers into ax and bx
+mov bx, b
+
+add al, bl 		; add lower byte
+daa 			; convert al to proper BCD
+adc ah, bh 		; add upper byte with carry
+
+xchg ah, al
+daa 			; convert ah (now al) to proper BCD
+xchg ah, al
+
+mov bx, ax      ; make copy of result
+
+lea dx, outmsg  ; display output message
+mov ah, 09h
+int 21h
+
+mov dl, bh
+call showdl 	; display upper byte
+mov dl, bl
+call showdl 	; display lower byte
+
+
+mov ah, 4ch
+int 21h
+
+showdl proc
+
+mov dh, dl 		; make copy of dl
+
+ror dl, 04h		; rotate right
+and dl, 0fh		; mask lower byte
+add dl, '0'		; value -> ascii
+
+mov ah, 02h		; display dl
+int 21h
+
+mov dl, dh		; restore original number
+and dl, 0fh		; mask upper byte
+add dl, '0'		; value -> ascii
+
+mov ah, 02h 	; display dl
+int 21h
+
+ret
+
+showdl endp
+
+end
