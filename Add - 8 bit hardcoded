@@ -1,0 +1,56 @@
+; Question : Hardcoded addition of two 8-bit numbers
+
+
+.model small
+.data
+a db 25h
+b db 36h
+
+outmsg db "The result of addition is $"
+
+.code
+mov ax, @data
+mov ds, ax
+
+mov ah, 00h
+mov al, a           ; load first number into al
+add al, b           ; add second number
+daa
+
+mov bx, ax          ; store result in bx
+
+cmp bh, 00h         ; if bh is zero then just print bl
+je lower           ; else print entire bx register
+
+mov dl, bh
+call showdl
+
+lower:
+mov dl, bl
+call showdl
+
+mov ah, 4ch
+int 21h
+
+showdl proc
+
+mov dh, dl
+
+ror dl, 04h
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+
+end
