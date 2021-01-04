@@ -1,0 +1,79 @@
+printc macro char
+mov dl, char
+mov ah, 02h
+int 21h
+endm
+
+print macro msg
+lea dx, msg
+mov ah, 09h
+int 21h
+endm
+
+.model small
+.stack 100h
+.data
+
+inmsg db "Type some string: $"
+buff db 30h, ?, 30h dup('$')
+
+debug1 db "Reached here$"
+
+.code
+mov ax, @data
+mov ds, ax
+
+print inmsg         ; print input message
+lea dx, buff        ; get input from user
+mov ah, 0ah
+int 21h
+
+printc 0ah          ; print linefeed
+
+cld
+mov al, ' ' 
+xor cx, cx
+mov cl, buff[1]
+lea di, buff[2]
+
+; iterate over entire string and find the index of white space
+; and store that index in cl
+L1:
+mov dl, [di]
+cmp dl, al
+je L2               ; if current character == whitespace then break loop
+inc di
+dec cl
+jnz L1
+
+L2:
+push cx             ; push index of first white space onto stack
+
+; now print the second word in user input
+lea dx, buff[2]
+add dx, cx
+inc dx              ; increment dx to skip over the whitespace
+mov ah, 09h
+int 21h             ; display second word
+
+printc 0ah
+; printc 20h
+lea di, buff[2]
+mov cl, buff[1]
+
+; now display the first word form string
+L3:
+mov dl, [di]
+cmp dl, ' '
+je exit
+inc di
+mov ah, 02h
+int 21h
+dec cl
+jnz L3
+
+exit:
+mov ah, 4ch
+int 21h
+
+end
