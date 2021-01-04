@@ -1,0 +1,79 @@
+; Question: pack a unpacked BCD
+
+.model small
+.data
+inmsg db "Enter a BCD: $"
+outmsg db "The unpacked BCD is $"
+
+; PACKED BCD example 23  -> unpacked 0203
+.code
+mov ax, @data
+mov ds, ax
+
+lea dx, inmsg       ; display input message
+mov ah, 09h
+int 21h
+
+call getdl      ; 02
+mov bh, dl
+call getdl      ; 03
+mov bl, dl
+
+mov dl, 0ah         ; print newline
+mov ah, 02h
+int 21h
+
+lea dx, outmsg      ; display output message
+mov ah, 09h
+int 21h
+
+; pack the BCD
+rol bh, 04h         ; 20
+add bl, bh          ; 20+03 = 23
+
+mov dl, bl          ; display bl
+call showdl
+
+mov ah, 4ch         ; exit
+int 21h
+
+getdl proc          ; procedure to get 2 bytes of data from user
+
+mov ah, 01h
+int 21h
+sub al, '0'
+
+mov dl, al
+rol dl, 04h
+
+mov ah, 01h
+int 21h
+sub al, '0'
+
+add dl, al
+
+ret
+getdl endp
+
+showdl proc         ; standard procedure to display dl
+
+mov dh, dl
+
+ror dl, 04h
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+
+end
