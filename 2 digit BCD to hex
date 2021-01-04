@@ -1,0 +1,100 @@
+; Program to convert 2 digit BCD to 2 digit hex
+
+print macro msg
+lea dx, msg
+mov ah, 09h
+int 21h
+endm
+
+printc macro char
+mov dl, char
+mov ah, 02h
+int 21h
+endm
+
+.model small
+.stack 10h
+
+.data
+inmsg db "Enter a 2 digit BCD: $"
+outmsg db "The hexadecimal equivalent is $"
+
+.code
+mov ax, @data
+mov ds, ax
+mov es, ax
+
+print inmsg         ; display input message
+call getdl          ; get 2 digits from user
+
+push dx
+
+printc 0ah
+print outmsg
+
+; mov ah, 00h
+pop dx
+cmp dl, 0ah
+jle bottom
+
+; --------------- Actual Conversion Logic ----------------------
+
+mov bl, dl
+and bl, 0fh         ; put lower nibble of dl into bl
+
+mov al, dl
+and al, 0f0h        ; put upper nibble of dl into al
+
+mov cl, 04h
+ror al, cl          ; right rotate al 4 times
+
+mov dl, 0ah
+mul dl              ; al = al * 10d
+
+add al, bl
+; mov dl, al
+
+bottom:
+mov dl, al
+call showdl
+
+mov ah, 4ch
+int 21h
+
+; procedure to get 2 bytes of data from user
+getdl proc
+mov ah, 01h
+int 21h
+
+sub al, '0'
+mov dl, al
+rol dl, 04h
+
+mov ah, 01h
+int 21h
+sub al, '0'
+add dl, al
+
+ret
+getdl endp
+
+; procedure to display contents of dl
+showdl proc
+mov dh, dl
+ror dl, 04h
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+end
