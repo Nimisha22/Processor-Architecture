@@ -1,0 +1,87 @@
+; WAP in assembly to take 2 digits from user
+; and check if the number is prime or not
+
+printc macro char
+mov dl, char
+mov ah, 02h
+int 21h
+endm
+
+print macro msg
+lea dx, msg
+mov ah, 09h
+int 21h
+endm
+
+.model small
+.stack 100h
+.data
+
+inmsg db "Type a number: $"
+yes db "The number is prime $"
+no db "The number is not prime $"
+
+.code
+mov ax, @data
+mov ds, ax              ; link data segment
+
+print inmsg             ; print input message
+call getdl              ; take 2 digits of base 10 number from user         
+mov bx, dx
+printc 0ah              ; print newline
+mov dx, bx
+
+cmp dl, 01h
+jle falsemsg
+cmp dl, 02h
+je truemsg
+
+; ------------------ actual prime logic -----------------
+; for(int i = 2; i < num; i++)
+;       if(num % i == 0) goto falsemsg
+; goto truemsg
+
+mov cl, 02h             ; use cl for division
+
+L1:
+mov ax, dx
+div cl
+
+; after division the remainder is in ah
+
+cmp ah, 00h             ; if (ax % cl == 0)    i.e remainder is 0
+je falsemsg             ;       jump to false message
+inc cl
+cmp cl, dl
+jl L1                   ; keep repeating this until counter cl is equal to original number dl
+
+jmp truemsg             ; if loop is completed then jump to true message
+
+falsemsg:
+print no
+jmp exit
+truemsg:
+print yes
+
+exit:
+mov ah, 4ch
+int 21h
+
+; procedure to get 2 base 10 digits from user and convert them to hexadecimal
+getdl proc
+mov ah, 01h
+int 21h                 ; take first digit from user
+
+sub al, '0'             ; ascii stripping
+mov dl, 0ah
+mul dl                  ; multiple that digit with 0ah to convert it to its proper hex value
+
+mov ah, 01h
+int 21h                 ; take second digit
+
+sub al, '0'             ; ascii strip second digit
+add dl, al              ; now we have our number in hexadecimal form
+
+ret
+getdl endp
+end
