@@ -1,0 +1,97 @@
+; Question : division of two 8-bit numbers in runtime
+
+print macro msg
+lea dx, msg
+mov ah, 09h
+int 21h
+endm
+
+.model small
+.stack 100h
+.data
+a db ?
+b db ?
+
+inmsg db "Enter a number: $"
+outmsg db "The result of division is $"
+
+.code
+mov ax, @data
+mov ds, ax
+
+mov ch, 02h
+
+get:
+print inmsg
+call getdl_hex
+mov a, dl
+
+mov dl, 0ah         ; print newline
+mov ah, 02h
+int 21h
+
+print inmsg
+call getdl_hex
+mov b, dl
+
+mov ah, 00h
+mov al, a           ; load first number into al
+idiv b              ; divide by second number
+
+mov bl, al          ; store result in bl
+
+mov dl, 0ah         ; print newline
+mov ah, 02h
+int 21h
+
+lea dx, outmsg      ; print ouput message
+mov ah, 09h
+int 21h
+
+mov dl, bl
+call showdl
+
+mov ah, 4ch         ; exit
+int 21h
+
+getdl_hex proc      ; procedure to get 2 digits from user and store it in dl as hexadecimal value
+mov ah, 01h
+int 21h
+
+sub al, '0'
+mov dl, al
+
+int 21h
+sub al, '0'
+
+mov dh, 0ah
+xchg dl, al
+imul dh
+xchg dl, al
+
+add dl, al
+ret
+getdl_hex endp
+
+showdl proc         ; procedure to dispay contents of dl
+
+mov dh, dl
+
+ror dl, 04h
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+
+end
