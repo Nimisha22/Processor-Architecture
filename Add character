@@ -1,0 +1,84 @@
+;Question: given string "Vishakarma" add 'w' to 5th index and make it "Vishwakarma"
+
+
+print macro msg
+    lea dx, msg
+    mov ah, 09h
+    int 21h
+endm
+
+.model small
+.data
+
+
+inmsg db 10, 13, "Type a string: $"
+indexmsg db 10, 13, "Type index (1-digit): $"
+wordmsg db 10, 13, "Type character to be inserted at that index: $"
+resultmsg db 10, 13, "The result is $"
+
+buff db 30h, ?, 30h dup('$')
+
+.code
+mov ax, @data
+mov ds, ax
+
+; get string from user
+print inmsg
+lea dx, buff
+mov ah, 0ah
+int 21h
+
+; get index from user
+print indexmsg
+mov ah, 01h
+int 21h
+sub al, '0'
+xor cx, cx
+mov cl, al          ; put index into cl
+
+; get word which replaces the index
+print wordmsg
+mov ah, 01h
+int 21h
+
+
+lea si, buff[2]
+add si, cx          ; add offset to get to that index
+dec si
+
+mov di, si   
+
+; find index of dollar sign
+repeat:
+mov dl, [di]  
+inc di
+cmp dl, '$'
+jne repeat
+
+; shift the array
+repeat2:
+mov ah, [di - 1]
+mov [di], ah
+dec di
+cmp di, si
+jg repeat2
+ 
+
+; put the character at that index
+mov [si], al
+
+
+; print newline 
+mov dl, 0ah
+mov ah, 02h
+int 21h
+
+; display result
+print resultmsg
+lea dx, buff[2]
+mov ah, 09h
+int 21h
+
+mov ah, 4ch
+int 21h
+end
