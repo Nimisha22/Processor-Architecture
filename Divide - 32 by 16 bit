@@ -1,0 +1,19 @@
+; divide 32 bit number by 16 bit number hardcoded
+
+
+.model small
+.code
+mov dx, 1234h           ; the divident (DX:AX) number is 12345678h
+mov ax, 5678h
+
+mov cx, 1235h           ; the divisor is 1235h
+
+; this causes overflow if cx <= dx
+div cx                  ; DX:AX / CX
+                        ; quotient goes into ax 
+                        ; remainder goes into dx
+
+; exit
+mov ah, 4ch
+int 21h
+end
