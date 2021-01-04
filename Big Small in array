@@ -1,0 +1,138 @@
+; program to find largest/ smallest of array
+.model small
+.data
+
+inlen db "Enter number of elements in array: $"
+
+arr db 20h dup(0)
+len db ?
+
+max dw ?
+min dw ?
+
+maxmsg db "The maximum is $"
+minmsg db "The minimum is $"
+
+.code
+mov ax, @data
+mov ds, ax
+mov es, ax
+
+lea dx, inlen        ; display input message
+mov ah, 09h
+int 21h
+
+mov ah, 01h          ; get size from user
+int 21h
+sub al, '0'
+mov len, al
+
+mov ch, len          ; use ch for looping
+dec ch
+lea di, arr          ; use DI for putting user input into memory location
+
+mov dl, 0ah          ; print newline
+mov ah, 02h
+int 21h
+
+call getdl           ; get first number
+mov dh, 00h
+mov max, dx          ; assume first number is maximum and minimum
+mov min, dx
+
+mov dl, 0ah          ; print newline
+mov ah, 02h
+int 21h
+
+take0:               ; take array from user
+call getdl
+mov dh, 00h
+mov [di], dl        
+
+cmp dx, min          ; if (dl < min) min = dl
+jl getmin
+
+take1:
+cmp dx, max          ; if (dl > max) = dl
+jg getmax
+
+take2:
+mov dl, 0ah          ; print newline
+mov ah, 02h
+int 21h
+
+inc di               ; move to the next element
+dec ch               ; decrement counter
+jnz take0
+
+jmp last
+
+getmin:              ; put current value into min
+mov min, dx
+jmp take1
+
+getmax:              ; put current value into max
+mov max, dx
+jmp take2
+
+last:
+lea dx, maxmsg      ; display maximum
+mov ah, 09h
+int 21h
+
+mov dx, max
+call showdl
+
+mov dl, 0ah
+mov ah, 02h
+int 21h
+
+lea dx, minmsg      ; display minimum
+mov ah, 09h
+int 21h
+
+mov dx, min
+call showdl
+
+exit:
+mov ah, 4ch
+int 21h
+
+getdl proc        ; standard procedure to get 2 decimal digits from user
+mov ah, 01h
+int 21h
+sub al, '0'
+
+mov dl, al
+
+mov ah, 01h
+int 21h
+sub al, '0'
+
+rol dl, 04h
+add dl, al
+
+ret
+getdl endp
+
+showdl proc        ; procedure to display contents of dl
+mov dh, dl
+
+ror dl, 04h
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+mov dl, dh
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h
+
+ret
+showdl endp
+
+end
