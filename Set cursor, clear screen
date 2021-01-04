@@ -1,0 +1,68 @@
+; Quesiton: Clear screen, set cursor position and display message
+.model small
+.stack 100h
+.data
+
+fname db "Nimisha$"
+mname db '"Anil"$'
+lname db "Doshi$"
+outmsg db 10, 13, "Printed as required$"
+
+.code
+mov ax, @data
+mov ds, ax
+
+clear:
+; clear screen
+mov ax, 0600h       ; ah = 6 means scroll up window
+                    ; al = 0 means scroll the entire window
+mov bh, 07h         ; 07 is attribute
+mov cl, 0000h       
+mov dx, 184fh       
+int 10h
+
+first:
+mov ah, 02          ; ah = 02 means set cursor position
+mov bh, 00h         
+mov dx, 0000h       ; set cursor position to dx (dh = row, dl = col)
+int 10h
+
+lea dx, fname       ; print first name
+mov ah, 09h
+int 21h
+
+middle:
+mov ah, 02h         ; set cursor to centre of screen
+mov bh, 00h         
+mov dh, 12           
+mov dl, 34
+int 10h
+
+lea dx, mname       ; print middle name
+mov ah, 09h
+int 21h
+
+last:
+mov ah, 02h         ; goto last column last row
+mov bh, 00h         
+mov dh, 21
+mov dl, 74
+int 10h
+
+lea dx, lname       ; print last name
+mov ah, 09h
+int 21h
+
+; (btw this is overkill)
+mov dl, 0ah         ; print newline
+mov ah, 02h
+int 21h
+
+lea dx, outmsg      ; display the danger message
+mov ah, 09h
+int 21h
+
+mov ah, 4ch         ; exit
+int 21h
+
+end
