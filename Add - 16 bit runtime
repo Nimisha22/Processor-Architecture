@@ -1,0 +1,114 @@
+; Question: add two 16-but numbers in runtime
+.model small
+.data
+
+a dw ?
+b dw ?
+
+inmsg db "Enter a number: $"
+outmsg db "The result is $"
+
+.code
+mov ax, @data
+mov ds, ax
+
+mov ch, 02h
+
+get:
+mov dl, 0ah     ; print newline
+mov ah, 02h
+int 21h
+
+lea dx, inmsg   ; display input message
+mov ah, 09h
+int 21h
+
+mov ah, 01h     ; get thousands digit
+int 21h
+sub al, '0'
+
+mov bh, al      ; store it in bh
+
+mov ah, 01h     ; get hundreds digit
+int 21h
+sub al, '0'
+
+rol bh, 04h
+add bh, al      ; store it in bh
+
+mov ah, 01h     ; get tens digit
+int 21h
+sub al, '0'
+
+mov bl, al      ; store it in bl
+
+mov ah, 01h     ; get units digit
+int 21h
+sub al, '0'
+
+rol bl, 04h
+add bl, al      ; store it in bl
+
+dec ch
+jz storeb       ; if ch == 0 store result in memory 'a' otherwise store in memory 'b'
+
+mov a, bx       ; write the result in memory location
+jmp get
+
+storeb:
+mov b, bx
+
+start:
+mov ax, a 		; load both numbers into ax and bx
+mov bx, b
+
+add al, bl 		; add lower byte
+daa 			; convert al to proper BCD
+adc ah, bh 		; add upper byte with carry
+
+xchg ah, al
+daa 			; convert ah (now al) to proper BCD
+xchg ah, al
+
+mov bx, ax      ; make copy of result
+
+mov dl, 0ah     ; print newline
+mov ah, 02h
+int 21h
+
+lea dx, outmsg  ; display output message
+mov ah, 09h
+int 21h
+
+mov dl, bh
+call showdl 	; display upper byte
+mov dl, bl
+call showdl 	; display lower byte
+
+
+mov ah, 4ch
+int 21h
+
+showdl proc
+
+mov dh, dl 		; make copy of dl
+
+ror dl, 04h		; rotate right
+and dl, 0fh		; mask lower byte
+add dl, '0'		; value -> ascii
+
+mov ah, 02h		; display dl
+int 21h
+
+mov dl, dh		; restore original number
+and dl, 0fh		; mask upper byte
+add dl, '0'		; value -> ascii
+
+mov ah, 02h 	; display dl
+int 21h
+
+ret
+
+showdl endp
+
+end
