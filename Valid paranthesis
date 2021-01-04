@@ -1,0 +1,128 @@
+; Program to check if given set of paranthesis is valid or not
+
+printc macro char
+mov dl, char
+mov ah, 02h
+int 21h
+endm
+
+print macro msg
+lea dx, msg
+mov ah, 09h
+int 21h
+endm
+
+println macro msg
+print msg
+mov dl, 0ah
+mov ah, 02h
+int 21h
+endm
+
+.model small
+.stack 100h
+.data
+
+inmsg db "Enter a pattern: $"
+string db 30, ?, 28 dup('$')
+errmsg db "Please enter only paranthesis sequence$"
+
+yes db "The given sequence is valid$"
+no db "The given sequence is not valid$"
+
+.code
+mov ax, @data
+mov ds, ax
+
+print inmsg         ; display input message
+
+lea dx, string      ; get string from user
+mov ah, 0ah
+int 21h
+
+printc 0ah
+
+lea bx, string[2]
+mov ch, 00h
+mov cl, string[1]
+
+check:
+mov dx, [bx]
+cmp dl, 0dh
+je comparison               ; if found carriage return then stop
+
+call is_start_type          ; if dl is start type then increment ch
+cmp ax, 0001h
+je start_t
+
+l2:
+call is_end_type            ; if dl is end type  then decrement ch
+cmp ax, 0001h
+je end_t
+
+error:
+print errmsg                ; if it is neither then print error then exit
+jmp exit
+
+checkpoint:
+inc bl
+dec cl
+jnz check
+jmp comparison
+
+start_t:
+inc ch
+jmp checkpoint
+
+end_t:
+dec ch
+jmp checkpoint
+
+comparison:                 ; if given string is valid sequence then print appropriate message
+cmp ch, 00h
+jne notv
+print yes
+jmp exit
+
+notv:
+print no
+
+exit:
+mov ah, 4ch
+int 21h
+
+
+; procedure to find if dl has start type paranthesis
+is_start_type proc
+cmp dl, '('         ; if(dl == '(' )
+je true1            ;    ax = 1
+
+jmp false1          ; else ax = 0
+
+true1:
+mov ax, 0001h
+jmp return1
+false1:
+mov ax, 0000h
+return1:
+ret
+is_start_type endp
+
+
+; procedure to find if dl has ending type paranthesis
+is_end_type proc
+cmp dl, ')'         ; if ( dl == ')' )
+je true2            ;       ax = 1
+
+jmp false2          ; else ax = 0
+
+true2:
+mov ax, 0001h
+jmp return2
+false2:
+mov ax, 0000h
+return2:
+ret
+is_end_type endp
+
+end
