@@ -1,0 +1,84 @@
+print macro msg
+lea dx, msg
+mov ah, 09h
+int 21h
+endm
+
+.model small
+.stack 100h
+.data
+
+inmsg db "Type a sentence: $"
+buff db 50h, ?, 50h dup('$')
+
+outmsg1 db "There are $"
+outmsg2 db " words in the sentence $"
+
+.code
+mov ax, @data
+mov ds, ax
+
+print inmsg             ; print input message
+lea dx, buff            ; get string from user
+mov ah, 0ah
+int 21h
+
+mov dl, 0ah             ; print linefeed
+mov ah, 02h
+int 21h
+
+xor bx, bx              ; use bx as counter for numebr of whitespaces
+lea di, buff[2]
+mov ch, 00h
+mov cl, buff[1]
+
+; now iterate over the entire string
+; and find number of whitespaces
+L1:
+mov dl, [di]
+cmp dl, 20h             ; if(dl == ' ') then increment count
+je count
+L2:
+inc di
+dec cl
+jnz L1                  ; repeat this for each character in string
+jmp L3
+
+count:
+inc bx
+jmp L2
+
+L3:
+mov ax, bx
+inc al                  ; number of words = number of whitesapces + 1
+daa                     ; convert al to proper BCD
+
+print outmsg1           ; display the output message
+mov dl, al
+call showdl
+print outmsg2
+
+exit:
+mov ah, 4ch
+int 21h
+
+showdl proc
+mov dh, dl              ; create a backup of original number
+
+ror dl, 04h             ; rotate 4 times
+and dl, 0fh             ; mask upper nibble
+add dl, '0'             ; number to ascii
+
+mov ah, 02h
+int 21h                 ; print the number
+
+mov dl, dh              ; restore original copy
+and dl, 0fh             ; mask upper nibble
+add dl, '0'             ; number to ascii
+
+mov ah, 02h
+int 21h                 ; print number
+
+ret
+showdl endp
+end
