@@ -1,0 +1,55 @@
+; Add two numbers if they are even 
+
+.model small
+.stack 100h
+.data
+
+num1 db 20h
+num2 db 40h
+
+.code
+mov ax, @data
+mov ds, ax
+   
+mov ah, num1
+mov al, num2
+
+
+; check if ah is odd
+mov ch, ah
+and ch, 01h   ; if ah is odd then least significant bit is 1
+cmp ch, 01h   ; is LSB is 1 then jump to exit
+je exit
+
+; check if al is odd
+mov ch, al
+and ch, 01h
+cmp ch, 01h
+je exit
+
+
+add ah, al
+
+
+; now print the result of addition
+mov dl, ah
+mov dh, ah
+
+ror dl, 04h
+and dl, 0fh
+add dl, '0'
+
+mov ah, 02h
+int 21h 
+
+mov dl, dh
+
+and dl, 0fh
+add dl, '0'
+
+int 21h
+   
+exit:   
+mov ah, 4ch
+int 21h
+end
