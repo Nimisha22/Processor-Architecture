@@ -1,0 +1,45 @@
+Program to sort given numbers in ascending / descending order
+
+.model small
+
+.data
+arr1 db 5h, 89h, 3h, 56h, 1h
+len1 equ $-arr1
+arr2 db 29h, 12h, 45h, 89h, 34h
+len2 equ $-arr2
+
+.code
+start: Mov ax, @data
+Mov ds, ax
+
+; Ascending Sort
+Mov ch, len1-1 ;no of itterations
+agn1: Mov cl, ch ;no of comparisions
+Mov si, offset arr1
+rept1: Mov al, [si]
+Inc si
+cmp al, [si]
+jbe next1
+xchg al, [si]
+Mov [si-1], al
+next1: Dec cl
+Jnz rept1
+Dec ch
+Jnz agn1
+
+; Descending Sort
+Mov ch, len2-1 ; no of itterations
+agn2: Mov cl, ch ; no of comparisions
+Mov si, offset arr2
+rept2: Mov al, [si]
+Inc si
+cmp al, [si]
+jae next2
+xchg al, [si]
+Mov [si-1], al
+next2: Dec cl
+Jnz rept2
+Dec ch
+Jnz agn2
+
+-------terminate
