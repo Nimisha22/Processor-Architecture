@@ -1,0 +1,95 @@
+; Write an assembly program to multiply two 16-bit numbers hardcoded
+
+printc macro char
+mov dl, char
+mov ah, 02h
+int 21h
+endm
+
+print macro msg
+lea dx, msg
+mov ah, 09h
+int 21h
+endm
+
+.model small
+.stack 100h
+.data
+
+fmsg db "The first number is $"
+smsg db "The second number is $"
+
+first  dw 0001h
+second dw 0110h
+
+resultmsg db "The result is $"
+
+.code
+mov ax, @data
+mov ds, ax          ; put base address of data segment into ds register
+
+print fmsg          ; display message
+mov bx, first       ; put number into bx, then use bx to print it
+mov dl, bh
+call showdl         ; display upper byte of number
+mov dl, bl
+call showdl         ; display lower byte of number
+
+printc 0ah          ; print linefeed (new line character)
+
+print smsg          ; display message
+mov bx, second      ; put number into bx, then use bx to print it
+mov dl, bh
+call showdl         ; display upper byte of number
+mov dl, bl
+call showdl         ; display lower byte of number
+
+mov ax, first
+mul second          ; multiply the two numbers
+; 16-bit number * 16-bit numer = 32-bit number
+; so after multiplication 
+; the upper end of 32-bit result is stored in DX
+; and lower end is in AX
+
+mov bx, ax          ; put lower end of 32-bit result in bx
+mov cx, dx          ; put upper end of 32-bit result in cx
+
+printc 0ah          ; print line feed (newline)
+print resultmsg     ; display result message
+
+mov dl, ch
+call showdl         ; display first byte of result
+mov dl, cl
+call showdl         ; display second byte
+mov dl, bh
+call showdl         ; third byte
+mov dl, bl
+call showdl         ; fourth byte
+
+exit:
+mov ah, 4ch         ; return control to DOS
+int 21h
+
+
+; this is a procedure to display contents of dl
+showdl proc
+mov dh, dl          ; create a backup of original number
+
+ror dl, 04h         ; rotate dl to put upper nibble of dl at lower nibble of dl
+and dl, 0fh         ; mask upper nibble
+add dl, '0'         ; convert the digit to its ascii
+
+mov ah, 02h
+int 21h             ; print the digit
+
+mov dl, dh          ; restore original number
+and dl, 0fh         ; mask upper nibble
+add dl, '0'         ; convert digit to its ascii
+
+mov ah, 02h
+int 21h             ; print the digit
+
+ret
+showdl endp
+
+end
