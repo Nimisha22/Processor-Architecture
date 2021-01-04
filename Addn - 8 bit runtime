@@ -1,0 +1,101 @@
+; Question : addition of two 8-bit numbers in runtime
+
+printc macro char
+mov dl, char
+mov ah, 02h
+int 21h
+endm
+
+.model small
+.data
+a db ?
+b db ?
+
+inmsg db "Enter a number: $"
+outmsg db "The result of addition is $"
+
+.code
+mov ax, @data
+mov ds, ax
+
+get:
+lea dx, inmsg     ; print input message
+mov ah, 09h
+int 21h
+
+call getdl        ; get 2 digits from user      
+mov a, dl           ; put those digits in a
+
+printc 0ah
+
+lea dx, inmsg       ; print input message
+mov ah, 09h
+int 21h
+
+call getdl
+mov b, dl           ; put those digits in b
+
+printc 0ah
+
+mov ah, 00h
+mov al, a           ; load first number into al
+add al, b           ; add second number
+daa
+
+mov bx, ax          ; store result in bx
+
+lea dx, outmsg      ; print ouput message
+mov ah, 09h
+int 21h
+
+cmp bh, 00h         ; if bh is zero then just print bl
+je lower           ; else print entire bx register
+
+mov dl, bh
+call showdl
+
+lower:
+mov dl, bl
+call showdl
+
+mov ah, 4ch
+int 21h
+
+getdl proc
+mov ah, 01h         ; take first digit
+int 21h
+sub al, '0'
+mov dl, al          ; store it in dl
+
+mov ah, 01h         ; take second digit
+int 21h
+sub al, '0'
+
+rol dl, 04h         
+add dl, al          ; store final result in dl
+
+ret
+getdl endp
+
+showdl proc
+
+mov dh, dl          ; make copy of original number
+
+ror dl, 04h         ; rotate dl to put upper nibble to lower nibble
+and dl, 0fh         ; mask upper nibble
+add dl, '0'         ; convert the digit to its ascii
+
+mov ah, 02h
+int 21h             ; display the first digit
+
+mov dl, dh          ; restore original number
+and dl, 0fh         ; mask upper nibble
+add dl, '0'         ; conevrt the digit to its ascii
+
+mov ah, 02h
+int 21h             ; print the second digit
+
+ret
+showdl endp
+
+end
